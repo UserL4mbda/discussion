@@ -86,11 +86,23 @@ int main() {
   system(action);
   printf("\n");
 
+  //Affichage de ce que whisper a compris
+  sprintf(action, "cat %s", text_file);
+  printf("Command: %s\n", action);
+  system(action);
+  printf("\n");
+
   //Posons la question a ollama
   //prompt=`cat file.txt`;curl http://localhost:11434/api/generate -s -d "{\"model\":\"dolphin-mistral\",\"stream\":false, \"prompt\":\"$prompt\"}" | jq -r '.response' > response.txt
   //Utilisation d'un preprompt pour compenser l'enregistrement sonore de mauvaise qualite
   char * preprompt = "You are an artificial intelligence used in extreme environments, where the quality of communication is very poor and user requests may be altered. Your role is to respond to the most likely question. You must respond in French. QUESTION:";
   sprintf(action, "prompt=`cat %s`;curl %s -s -d \"{\\\"model\\\":\\\"%s\\\",\\\"stream\\\":false, \\\"prompt\\\":\\\"%s $prompt\\\"}\" | jq -r '.response' > %s", text_file, ollama_url, ollama_model, preprompt, response_file);
+  printf("Command: %s\n", action);
+  system(action);
+  printf("\n");
+
+  //Affichage de l'inference d'Ollama
+  sprintf(action, "cat %s", response_file);
   printf("Command: %s\n", action);
   system(action);
   printf("\n");
