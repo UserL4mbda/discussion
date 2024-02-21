@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <sys/types.h>
+#include <string.h>
 
 void child_process() {
   printf("ENFANT PID : %d\n", getpid());
@@ -132,6 +133,9 @@ int main() {
   int MAX_SIZE = 2048;
   char preprompt[MAX_SIZE];
   readfile(prepromptfile, preprompt, MAX_SIZE);
+  //Suppression de \n
+  size_t pos = strcspn(preprompt, "\n");
+  preprompt[pos] = '\0';
   
   sprintf(action, "prompt=`cat %s`;curl %s -s -d \"{\\\"model\\\":\\\"%s\\\",\\\"stream\\\":false, \\\"prompt\\\":\\\"%s $prompt\\\"}\" | jq -r '.response' > %s", text_file, ollama_url, ollama_model, preprompt, response_file);
   printf("Command: %s\n", action);
