@@ -15,6 +15,36 @@ void child_process() {
   exit(EXIT_FAILURE);
 }
 
+void readfile(char* filename, char* content, int MAX_SIZE){
+  FILE *file;
+  //char filename[100];
+  //char content[MAX_SIZE];
+  char ch;
+  int i = 0;
+
+  //printf("Enter the filename: ");
+  //scanf("%s", filename);
+
+  file = fopen(filename, "r");
+
+  if (file == NULL) {
+    printf("File not found or unable to open the file.\n");
+    exit(1);
+  }
+
+  // Read contents from file
+  while ((ch = fgetc(file)) != EOF && i < MAX_SIZE - 1) {
+    content[i++] = ch;
+  }
+  content[i] = '\0'; // Null-terminate the string
+
+  fclose(file);
+
+  //printf("Content of the file \"%s\":\n%s\n", filename, content);
+
+  return;
+}
+
 void signal_handler(int signal) {
   printf("Signal %d trapped.\n", signal);
 }
@@ -59,6 +89,7 @@ int main() {
   char* ollama_url    = "http://localhost:11434/api/generate";
   char* response_file = "response.txt";
   char* ollama_model  = "dolphin-mistral";
+  char* prepromptfile = "preprompt.txt";
 
   //Verifions la presence du fichier wav
   if(access(sound_file, F_OK) == -1){
@@ -95,7 +126,13 @@ int main() {
   //Posons la question a ollama
   //prompt=`cat file.txt`;curl http://localhost:11434/api/generate -s -d "{\"model\":\"dolphin-mistral\",\"stream\":false, \"prompt\":\"$prompt\"}" | jq -r '.response' > response.txt
   //Utilisation d'un preprompt pour compenser l'enregistrement sonore de mauvaise qualite
-  char * preprompt = "You are an artificial intelligence used in extreme environments, where the quality of communication is very poor and user requests may be altered. Your role is to respond to the most likely question. You must respond in French. QUESTION:";
+
+  //char * preprompt = "You are an artificial intelligence used in extreme environments, where the quality of communication is very poor and user requests may be altered. Your role is to respond to the most likely question. You must respond in French. QUESTION:";
+
+  int MAX_SIZE = 2048;
+  char preprompt[MAX_SIZE];
+  readfile(prepromptfile, preprompt, MAX_SIZE);
+  
   sprintf(action, "prompt=`cat %s`;curl %s -s -d \"{\\\"model\\\":\\\"%s\\\",\\\"stream\\\":false, \\\"prompt\\\":\\\"%s $prompt\\\"}\" | jq -r '.response' > %s", text_file, ollama_url, ollama_model, preprompt, response_file);
   printf("Command: %s\n", action);
   system(action);
