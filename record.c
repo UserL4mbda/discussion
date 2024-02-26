@@ -5,6 +5,52 @@
 #include <sys/types.h>
 #include <string.h>
 
+//Warning, it's the caller responsability
+//to free the new char*
+char* replace(const char *str){
+  int len = strlen(str);
+  int new_len = len;
+
+  for (int i=0; i < len; i++){
+    if(str[i] == '\n'){
+      new_len += 2; // for "\\n"
+    }else if(str[i] == '"'){
+      new_len += 2; // for "\""
+    }
+  }
+
+  char *new_str = (char *) malloc(new_len * sizeof(char));
+  if(new_str == NULL){
+    fprintf(stderr, "Memory allocation failed\n");
+    exit(EXIT_FAILURE);
+  }
+
+  int idx = 0;
+  for(int i=0; i<len; i++){
+    if(str[i] == '\n'){
+      new_str[idx++] = '\\';
+      new_str[idx++] = 'n';
+    }else if(str[i] == '"'){
+      new_str[idx++] ='\\';
+      new_str[idx++] = '"';
+    }else{
+      new_str[idx++] = str[i];
+    }
+  }
+  new_str[idx] = '\0';
+
+  return new_str;
+}
+
+void test_replace(){
+  const char *str = "Hello\n\"World\"\n";
+  printf("%s\n", str);
+  char *new_str = replace(str);
+  printf("%s\n", new_str);
+  free(new_str);
+  return;
+}
+
 void child_process() {
   printf("ENFANT PID : %d\n", getpid());
   //Command a lancer:
@@ -131,11 +177,14 @@ int main() {
   //char * preprompt = "You are an artificial intelligence used in extreme environments, where the quality of communication is very poor and user requests may be altered. Your role is to respond to the most likely question. You must respond in French. QUESTION:";
 
   int MAX_SIZE = 2048;
-  char preprompt[MAX_SIZE];
-  readfile(prepromptfile, preprompt, MAX_SIZE);
+  char preprompt_f[MAX_SIZE];
+  readfile(prepromptfile, preprompt_f, MAX_SIZE);
   //Suppression de \n
-  size_t pos = strcspn(preprompt, "\n");
-  preprompt[pos] = '\0';
+  //size_t pos = strcspn(preprompt, "\n");
+  //preprompt[pos] = '\0';
+
+  //On remplace \n et \"
+  char* preprompt = replace(preprompt_f);
   
   sprintf(action, "prompt=`cat %s`;curl %s -s -d \"{\\\"model\\\":\\\"%s\\\",\\\"stream\\\":false, \\\"prompt\\\":\\\"%s $prompt\\\"}\" | jq -r '.response' > %s", text_file, ollama_url, ollama_model, preprompt, response_file);
   printf("Command: %s\n", action);
