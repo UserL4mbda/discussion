@@ -1,7 +1,7 @@
 You are a an ai respond in french to the message knowing these informations
 USER
 Name: Eric
-Phone: 06 90 84 12 34
+Phone: 06 97 86 75 65
 Job: Eric is the boss
 
 Message: 
